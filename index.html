@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>NeuroTrack — Journal Migraine</title>
+
+  <!-- Fullscreen Mobile App (PWA) Meta Tags -->
+  <meta name="theme-color" content="#020617" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="NeuroTrack" />
+
+  <!-- Embedded SVG App Icon for Home Screen & App Drawer -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%236366f1'/%3E%3Cstop offset='100%25' stop-color='%239333ea'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='115' fill='url(%23g)'/%3E%3Cpath d='M256 128c-52 0-96 38-96 92 0 34 18 64 44 80v44c0 18 14 32 32 32h40c18 0 32-14 32-32v-44c26-16 44-46 44-80 0-54-44-92-96-92zm-24 184h48v24h-48v-24zm24-144c32 0 56 22 56 52 0 22-14 42-34 50l-10 4v14h-24v-14l-10-4c-20-8-34-28-34-50 0-30 24-52 56-52z' fill='%23ffffff'/%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='115' fill='%234f46e5'/%3E%3Ccircle cx='256' cy='230' r='90' fill='none' stroke='%23ffffff' stroke-width='28'/%3E%3Cpath d='M210 230h30l16-35 20 70 16-35h20' fill='none' stroke='%23ffffff' stroke-width='22' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+
+  <!-- Dynamic Web App Manifest Injection for True Standalone App Installation -->
+  <script>
+    (function() {
+      const iconSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='115' fill='%234f46e5'/%3E%3Ccircle cx='256' cy='256' r='130' fill='none' stroke='%23ffffff' stroke-width='28'/%3E%3Cpath d='M185 256h45l25-55 30 110 25-55h35' fill='none' stroke='%23ffffff' stroke-width='26' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E";
+      const manifest = {
+        name: "NeuroTrack - Suivi des Migraines",
+        short_name: "NeuroTrack",
+        description: "Application médicale autonome de suivi des migraines et déclencheurs",
+        start_url: ".",
+        display: "standalone",
+        background_color: "#020617",
+        theme_color: "#020617",
+        orientation: "portrait",
+        icons: [
+          { src: iconSvg, sizes: "192x192", type: "image/svg+xml", purpose: "any maskable" },
+          { src: iconSvg, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
+        ]
+      };
+      const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = URL.createObjectURL(blob);
+      document.head.appendChild(link);
+    })();
+  </script>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React, ReactDOM & Babel for standalone execution -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: none;
+      user-select: none;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    @media print {
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div id="root"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    window.FirebaseSDK = {
+      initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged,
+      getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot
+    };
+    window.dispatchEvent(new Event('firebase-ready'));
+  </script>
+
+  <script type="text/babel">
+    const { useState, useMemo, useEffect } = React;
+
+    const TRIGGERS_CATALOG = [
+      { id: 'stress', label: 'Stress / Anxiété', category: 'Émotionnel', icon: '⚡' },
+      { id: 'lack_sleep', label: 'Manque de sommeil', category: 'Sommeil', icon: '🌙' },
+      { id: 'oversleep', label: 'Excès de sommeil', category: 'Sommeil', icon: '💤' },
+      { id: 'screens', label: 'Écrans / Lumière bleue', category: 'Environnement', icon: '💻' },
+      { id: 'weather', label: 'Changement météo / Orage', category: 'Environnement', icon: '⛈️' },
+      { id: 'bright_light', label: 'Lumière vive / Soleil', category: 'Environnement', icon: '☀️' },
+      { id: 'noise', label: 'Bruit fort', category: 'Environnement', icon: '🔊' },
+      { id: 'strong_smell', label: 'Odeurs fortes', category: 'Environnement', icon: '🌸' },
+      { id: 'dehydration', label: 'Déshydratation', category: 'Alimentation', icon: '💧' },
+      { id: 'skipped_meal', label: 'Repas sauté / Jeûne', category: 'Alimentation', icon: '🍽️' },
+      { id: 'alcohol', label: 'Alcool (Vin, etc.)', category: 'Alimentation', icon: '🍷' },
+      { id: 'caffeine', label: 'Caféine (Excès ou sevrage)', category: 'Alimentation', icon: '☕' },
+      { id: 'chocolate_cheese', label: 'Chocolat / Fromage affiné', category: 'Alimentation', icon: '🧀' },
+      { id: 'hormones', label: 'Cycle hormonal / Règles', category: 'Physiologique', icon: '🩸' },
+      { id: 'neck_pain', label: 'Tension cervicale', category: 'Physiologique', icon: '🧣' },
+      { id: 'physical_effort', label: 'Effort physique intense', category: 'Physiologique', icon: '🏃' },
+    ];
+
+    const SYMPTOMS_CATALOG = [
+      { id: 'photophobia', label: 'Photophobie (Lumière)' },
+      { id: 'phonophobia', label: 'Phonophobie (Bruit)' },
+      { id: 'nausea', label: 'Nausées / Vomissements' },
+      { id: 'aura_visual', label: 'Aura visuelle (Points, zigzags)' },
+      { id: 'aura_sensory', label: 'Fourmillements / Engourdissement' },
+      { id: 'dizziness', label: 'Vertiges / Étourdissements' },
+      { id: 'fatigue', label: 'Fatigue extrême' },
+      { id: 'brain_fog', label: 'Brouillard mental' },
+      { id: 'pulsating', label: 'Douleur pulsatile (Battements)' },
+    ];
+
+    const HEAD_ZONES = [
+      { id: 'frontal_left', label: 'Front Gauche', description: 'Zone frontale gauche' },
+      { id: 'frontal_right', label: 'Front Droit', description: 'Zone frontale droite' },
+      { id: 'temple_left', label: 'Tempe Gauche', description: 'Artère temporale gauche' },
+      { id: 'temple_right', label: 'Tempe Droite', description: 'Artère temporale droite' },
+      { id: 'ocular_left', label: 'Œil Gauche', description: 'Rétro-orbitaire gauche' },
+      { id: 'ocular_right', label: 'Œil Droit', description: 'Rétro-orbitaire droit' },
+      { id: 'vertex', label: 'Sommet du crâne', description: 'Haut de la tête' },
+      { id: 'occipital', label: 'Nuque / Occiput', description: 'Base du crâne et cervicales' },
+    ];
+
+    const MEDICATIONS_CATALOG = [
+      'Aucun',
+      'Triptan (Zomig, Relpax, Sumatriptan)',
+      'AINS (Ibuprofène, Kétoprofène)',
+      'Paracétamol',
+      'Aspirine + Caféine',
+      'Traitement de fond / Autre'
+    ];
+
+    const INITIAL_LOGS = [
+      {
+        id: 'mig-1',
+        date: '2026-10-13',
+        startTime: '14:30',
+        durationHours: 6,
+        intensity: 8,
+        zones: ['temple_left', 'ocular_left'],
+        triggers: ['stress', 'screens', 'lack_sleep'],
+        symptoms: ['photophobia', 'nausea', 'pulsating'],
+        medication: 'Triptan (Zomig, Relpax, Sumatriptan)',
+        reliefScore: 4,
+        notes: 'Grosse journée de travail devant l’écran sans pause. Le triptan a mis 1h30 à agir.'
+      },
+      {
+        id: 'mig-2',
+        date: '2026-10-09',
+        startTime: '08:15',
+        durationHours: 12,
+        intensity: 9,
+        zones: ['frontal_right', 'temple_right', 'ocular_right'],
+        triggers: ['weather', 'hormones', 'lack_sleep'],
+        symptoms: ['photophobia', 'phonophobia', 'nausea', 'aura_visual'],
+        medication: 'Triptan (Zomig, Relpax, Sumatriptan)',
+        reliefScore: 3,
+        notes: 'Réveil avec aura visuelle, orage violent dehors. Repos complet dans le noir nécessaire.'
+      },
+      {
+        id: 'mig-3',
+        date: '2026-10-04',
+        startTime: '18:00',
+        durationHours: 4,
+        intensity: 5,
+        zones: ['frontal_left', 'frontal_right'],
+        triggers: ['dehydration', 'skipped_meal'],
+        symptoms: ['fatigue', 'pulsating'],
+        medication: 'AINS (Ibuprofène, Kétoprofène)',
+        reliefScore: 5,
+        notes: 'Oublié de boire toute l’après-midi. Passée rapidement après hydratation et ibuprofène.'
+      },
+      {
+        id: 'mig-4',
+        date: '2026-09-28',
+        startTime: '20:00',
+        durationHours: 8,
+        intensity: 7,
+        zones: ['occipital', 'temple_left'],
+        triggers: ['stress', 'neck_pain', 'screens'],
+        symptoms: ['photophobia', 'brain_fog'],
+        medication: 'AINS (Ibuprofène, Kétoprofène)',
+        reliefScore: 2,
+        notes: 'Partie d’une forte tension dans la nuque.'
+      },
+      {
+        id: 'mig-5',
+        date: '2026-09-21',
+        startTime: '11:00',
+        durationHours: 5,
+        intensity: 6,
+        zones: ['ocular_left', 'temple_left'],
+        triggers: ['alcohol', 'lack_sleep'],
+        symptoms: ['nausea', 'photophobia'],
+        medication: 'Paracétamol',
+        reliefScore: 2,
+        notes: 'Deux verres de vin rouge la veille au soir.'
+      },
+      {
+        id: 'mig-6',
+        date: '2026-09-15',
+        startTime: '16:45',
+        durationHours: 3,
+        intensity: 4,
+        zones: ['vertex'],
+        triggers: ['caffeine', 'stress'],
+        symptoms: ['fatigue'],
+        medication: 'Aspirine + Caféine',
+        reliefScore: 4,
+        notes: 'Mal de tête de fin de semaine.'
+      }
+    ];
+
+    const InteractiveHeadMap = ({ selectedZones = [], onToggleZone, readOnly = false, darkMode = true }) => {
+      const isSelected = (id) => selectedZones.includes(id);
+
+      const getZoneFill = (id) => {
+        if (isSelected(id)) return 'fill-rose-500/80 stroke-rose-300';
+        return darkMode
+          ? 'fill-slate-800/90 hover:fill-indigo-500/40 stroke-slate-600'
+          : 'fill-slate-200/90 hover:fill-indigo-300/60 stroke-slate-400';
+      };
+
+      const handleZoneClick = (id) => {
+        if (!readOnly && onToggleZone) onToggleZone(id);
+      };
+
+      return (
+        <div className="flex flex-col items-center">
+          <div className="relative w-64 h-72 flex items-center justify-center">
+            <svg viewBox="0 0 240 270" className="w-full h-full drop-shadow-md">
+              <path
+                d="M120 20 C65 20 35 65 35 120 C35 165 55 205 85 225 L85 255 L155 255 L155 225 C185 205 205 165 205 120 C205 65 175 20 120 20 Z"
+                className={darkMode ? 'fill-slate-900 stroke-slate-700' : 'fill-slate-100 stroke-slate-300'}
+                strokeWidth="3"
+              />
+              <path d="M35 115 C22 115 22 150 37 155" className={darkMode ? 'fill-none stroke-slate-700' : 'fill-none stroke-slate-300'} strokeWidth="3" />
+              <path d="M205 115 C218 115 218 150 203 155" className={darkMode ? 'fill-none stroke-slate-700' : 'fill-none stroke-slate-300'} strokeWidth="3" />
+
+              <path onClick={() => handleZoneClick('vertex')} d="M70 42 C95 25 145 25 170 42 C155 60 85 60 70 42 Z" className={`${getZoneFill('vertex')} transition-all duration-200 ${!readOnly ? 'cursor-pointer' : ''}`} strokeWidth="2" />
+              <path onClick={() => handleZoneClick('frontal_left')} d="M65 50 C85 62 116 62 116 62 L116 102 L55 102 C52 80 58 62 65 50 Z" className={`${getZoneFill('frontal_left')} transition-all duration-200 ${!readOnly ? 'cursor-pointer' : ''}`} strokeWidth="2" />
+              <path onClick={() => handleZoneClick('frontal_right')} d="M175 50 C155 62 124 62 124 62 L124 102 L185 102 C188 80 182 62 175 50 Z" className={`${getZoneFill('frontal_right')} transition-all duration-200 ${!readOnly ? 'cursor-pointer' : ''}`} strokeWidth="2" />
+              <path onClick={() => handleZoneClick('temple_left')} d="M38 100 L52 100 L56 150 L42 150 C36 135 36 115 38 100 Z" className={`${getZoneFill('temple_left')} transition-all duration-200 ${!readOnly ? 'cursor-pointer' : ''}`} strokeWidth="2" />
+              <path onClick={() => handleZoneClick('temple_right')} d="M202 100 L188 100 L184 150 L198 150 C204 135 204 115 202 100 Z" className={`${getZoneFill('temple_right')} transition-all duration-200 ${!readOnly ? 'cursor-pointer' : ''}`} strokeWidth="2" />
+              <ellipse onClick={() => handleZoneClick('ocular_left')} cx="86" cy="126" rx="24" ry="16" className={`${getZoneFill('ocular_left')} transition-all duration-200 ${!readOnly ? 'cursor-pointer' : ''}`} strokeWidth="2" />
+              <ellipse onClick={() => handleZoneClick('ocular_right')} cx="154" cy="126" rx="24" ry="16" className={`${getZoneFill('ocular_right')} transition-all duration-200 ${!readOnly ? 'cursor-pointer' : ''}`} strokeWidth="2" />
+              <path d="M120 120 L114 162 L126 162" className="fill-none stroke-slate-500/40" strokeWidth="2" strokeLinecap="round" />
+              <path d="M102 185 Q120 192 138 185" className="fill-none stroke-slate-500/40" strokeWidth="2" strokeLinecap="round" />
+              <path onClick={() => handleZoneClick('occipital')} d="M78 212 Q120 228 162 212 L152 252 L88 252 Z" className={`${getZoneFill('occipital')} transition-all duration-200 ${!readOnly ? 'cursor-pointer' : ''}`} strokeWidth="2" />
+
+              <text x="50" y="25" className="text-[10px] fill-slate-400 font-semibold uppercase tracking-wider">Gauche</text>
+              <text x="155" y="25" className="text-[10px] fill-slate-400 font-semibold uppercase tracking-wider">Droite</text>
+            </svg>
+          </div>
+
+          {!readOnly && (
+            <div className="flex flex-wrap gap-1.5 justify-center mt-2 max-w-xs">
+              {HEAD_ZONES.map((z) => {
+                const active = isSelected(z.id);
+                return (
+                  <button
+                    key={z.id}
+                    type="button"
+                    onClick={() => handleZoneClick(z.id)}
+                    className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
+                      active
+                        ? 'bg-rose-500/20 border-rose-500 text-rose-300 font-medium shadow-sm'
+                        : darkMode
+                        ? 'bg-slate-800/70 border-slate-700 text-slate-400 hover:text-slate-200'
+                        : 'bg-slate-100 border-slate-300 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {z.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    function NeuroTrackApp() {
+      const [darkMode, setDarkMode] = useState(true);
+      const [lowLightComfort, setLowLightComfort] = useState(false);
+      const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'new' | 'analytics' | 'calendar' | 'history' | 'report' | 'cloud_mobile'
+      const [logs, setLogs] = useState(() => {
+        try {
+          const saved = localStorage.getItem('neurotrack_logs_v1');
+          return saved ? JSON.parse(saved) : INITIAL_LOGS;
+        } catch (e) {
+          return INITIAL_LOGS;
+        }
+      });
+      const [editingId, setEditingId] = useState(null);
+      const [toastMessage, setToastMessage] = useState(null);
+      const [selectedLogModal, setSelectedLogModal] = useState(null);
+
+      const [user, setUser] = useState(null);
+      const [syncStatus, setSyncStatus] = useState('local');
+      const [dbRef, setDbRef] = useState(null);
+      const [appIdStr, setAppIdStr] = useState('default-migraine-tracker');
+
+      const [patientName, setPatientName] = useState('');
+      const [neurologistName, setNeurologistName] = useState('Dr. ');
+      const [preventiveTreatment, setPreventiveTreatment] = useState('Aucun traitement de fond actuel');
+
+      const [filterTrigger, setFilterTrigger] = useState('all');
+      const [filterMinIntensity, setFilterMinIntensity] = useState(1);
+
+      const [calendarMonth, setCalendarMonth] = useState(9); // Octobre
+      const [calendarYear, setCalendarYear] = useState(2026);
+
+      const [formData, setFormData] = useState({
+        date: '2026-10-15',
+        startTime: '09:00',
+        durationHours: 4,
+        intensity: 6,
+        zones: ['temple_left'],
+        triggers: [],
+        symptoms: ['photophobia'],
+        medication: 'Triptan (Zomig, Relpax, Sumatriptan)',
+        reliefScore: 4,
+        notes: ''
+      });
+
+      const showToast = (msg) => {
+        setToastMessage(msg);
+        setTimeout(() => setToastMessage(null), 3500);
+      };
+
+      // Save to phone localStorage automatically
+      useEffect(() => {
+        try {
+          localStorage.setItem('neurotrack_logs_v1', JSON.stringify(logs));
+        } catch (e) {}
+      }, [logs]);
+
+      useEffect(() => {
+        const setupFirebase = async () => {
+          if (!window.FirebaseSDK) return;
+          try {
+            const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-migraine-tracker';
+            setAppIdStr(currentAppId);
+            const rawConfig = typeof __firebase_config !== 'undefined' && __firebase_config ? JSON.parse(__firebase_config) : null;
+            if (!rawConfig) {
+              setSyncStatus('local');
+              return;
+            }
+            const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore } = window.FirebaseSDK;
+            const app = initializeApp(rawConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            setDbRef(db);
+
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+              await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+              await signInAnonymously(auth);
+            }
+            onAuthStateChanged(auth, (u) => {
+              if (u) setUser(u);
+            });
+          } catch (e) {
+            setSyncStatus('local');
+          }
+        };
+
+        if (window.FirebaseSDK) {
+          setupFirebase();
+        } else {
+          window.addEventListener('firebase-ready', setupFirebase);
+          return () => window.removeEventListener('firebase-ready', setupFirebase);
+        }
+      }, []);
+
+      useEffect(() => {
+        if (!user || !dbRef || !window.FirebaseSDK) return;
+        const { collection, doc, setDoc, onSnapshot } = window.FirebaseSDK;
+        const colRef = collection(dbRef, 'artifacts', appIdStr, 'users', user.uid, 'migraine_logs');
+
+        const unsub = onSnapshot(
+          colRef,
+          async (snap) => {
+            if (snap.empty) {
+              for (const item of INITIAL_LOGS) {
+                await setDoc(doc(dbRef, 'artifacts', appIdStr, 'users', user.uid, 'migraine_logs', item.id), item);
+              }
+              setSyncStatus('synced');
+            } else {
+              const items = snap.docs.map((d) => d.data());
+              items.sort((a, b) => new Date(b.date) - new Date(a.date));
+              setLogs(items);
+              setSyncStatus('synced');
+            }
+          },
+          () => setSyncStatus('local')
+        );
+        return () => unsub();
+      }, [user, dbRef, appIdStr]);
+
+      const stats = useMemo(() => {
+        if (!logs.length) {
+          return { totalCrises: 0, avgIntensity: 0, avgDuration: 0, topTriggers: [], topZones: [], medicationStats: [], daysSinceLast: '-' };
+        }
+        const totalCrises = logs.length;
+        const sumIntensity = logs.reduce((acc, l) => acc + Number(l.intensity), 0);
+        const sumDuration = logs.reduce((acc, l) => acc + Number(l.durationHours), 0);
+
+        const triggerMap = {};
+        logs.forEach((log) => {
+          (log.triggers || []).forEach((tId) => {
+            if (!triggerMap[tId]) triggerMap[tId] = { count: 0, totalIntensity: 0 };
+            triggerMap[tId].count += 1;
+            triggerMap[tId].totalIntensity += Number(log.intensity);
+          });
+        });
+
+        const topTriggers = Object.entries(triggerMap)
+          .map(([id, d]) => {
+            const info = TRIGGERS_CATALOG.find((t) => t.id === id) || { label: id, icon: '📌', category: 'Autre' };
+            return {
+              id,
+              label: info.label,
+              icon: info.icon,
+              category: info.category,
+              count: d.count,
+              percentage: Math.round((d.count / totalCrises) * 100),
+              avgSeverity: (d.totalIntensity / d.count).toFixed(1)
+            };
+          })
+          .sort((a, b) => b.count - a.count);
+
+        const zoneMap = {};
+        logs.forEach((l) => (l.zones || []).forEach((z) => { zoneMap[z] = (zoneMap[z] || 0) + 1; }));
+        const topZones = Object.entries(zoneMap)
+          .map(([id, count]) => ({
+            id,
+            label: HEAD_ZONES.find((z) => z.id === id)?.label || id,
+            count,
+            percentage: Math.round((count / totalCrises) * 100)
+          }))
+          .sort((a, b) => b.count - a.count);
+
+        const medMap = {};
+        logs.forEach((l) => {
+          if (!l.medication || l.medication === 'Aucun') return;
+          if (!medMap[l.medication]) medMap[l.medication] = { count: 0, totalRelief: 0 };
+          medMap[l.medication].count += 1;
+          medMap[l.medication].totalRelief += Number(l.reliefScore || 0);
+        });
+        const medicationStats = Object.entries(medMap)
+          .map(([name, d]) => ({
+            name,
+            count: d.count,
+            avgRelief: (d.totalRelief / d.count).toFixed(1),
+            efficiencyPercent: Math.round(((d.totalRelief / d.count) / 5) * 100)
+          }))
+          .sort((a, b) => b.efficiencyPercent - a.efficiencyPercent);
+
+        const sorted = [...logs].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const diffDays = Math.max(0, Math.floor((new Date('2026-10-15') - new Date(sorted[0].date)) / (1000 * 60 * 60 * 24)));
+
+        return {
+          totalCrises,
+          avgIntensity: (sumIntensity / totalCrises).toFixed(1),
+          avgDuration: (sumDuration / totalCrises).toFixed(1),
+          topTriggers,
+          topZones,
+          medicationStats,
+          daysSinceLast: diffDays
+        };
+      }, [logs]);
+
+      const handleToggleItem = (field, itemId) => {
+        setFormData((prev) => {
+          const exists = prev[field].includes(itemId);
+          return { ...prev, [field]: exists ? prev[field].filter((i) => i !== itemId) : [...prev[field], itemId] };
+        });
+      };
+
+      const handleSaveCrisis = async (e) => {
+        e.preventDefault();
+        const targetId = editingId || `mig-${Date.now()}`;
+        const entry = { ...formData, id: targetId };
+
+        if (editingId) {
+          setLogs((prev) => prev.map((item) => (item.id === editingId ? entry : item)));
+          setEditingId(null);
+        } else {
+          setLogs((prev) => [entry, ...prev]);
+        }
+
+        if (user && dbRef && window.FirebaseSDK) {
+          try {
+            const { doc, setDoc } = window.FirebaseSDK;
+            await setDoc(doc(dbRef, 'artifacts', appIdStr, 'users', user.uid, 'migraine_logs', targetId), entry);
+          } catch (err) {}
+        }
+        showToast(editingId ? 'Crise mise à jour !' : 'Nouvelle crise enregistrée !');
+        setFormData({
+          date: '2026-10-15',
+          startTime: '09:00',
+          durationHours: 4,
+          intensity: 6,
+          zones: ['temple_left'],
+          triggers: [],
+          symptoms: ['photophobia'],
+          medication: 'Triptan (Zomig, Relpax, Sumatriptan)',
+          reliefScore: 4,
+          notes: ''
+        });
+        setActiveTab('dashboard');
+      };
+
+      const handleEditLog = (log) => {
+        setFormData({
+          date: log.date,
+          startTime: log.startTime || '12:00',
+          durationHours: log.durationHours,
+          intensity: log.intensity,
+          zones: log.zones || [],
+          triggers: log.triggers || [],
+          symptoms: log.symptoms || [],
+          medication: log.medication || 'Aucun',
+          reliefScore: log.reliefScore || 3,
+          notes: log.notes || ''
+        });
+        setEditingId(log.id);
+        setSelectedLogModal(null);
+        setActiveTab('new');
+      };
+
+      const handleDeleteLog = async (id) => {
+        setLogs((prev) => prev.filter((l) => l.id !== id));
+        setSelectedLogModal(null);
+        if (user && dbRef && window.FirebaseSDK) {
+          try {
+            const { doc, deleteDoc } = window.FirebaseSDK;
+            await deleteDoc(doc(dbRef, 'artifacts', appIdStr, 'users', user.uid, 'migraine_logs', id));
+          } catch (err) {}
+        }
+        showToast('Crise supprimée.');
+      };
+
+      const getIntensityBadge = (intensity) => {
+        const val = Number(intensity);
+        if (val >= 8) return { label: 'Sévère', color: 'bg-rose-500/20 text-rose-400 border-rose-500/40' };
+        if (val >= 5) return { label: 'Modérée', color: 'bg-amber-500/20 text-amber-400 border-amber-500/40' };
+        return { label: 'Légère', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' };
+      };
+
+      const generateReportSummaryText = () => {
+        const lines = [
+          `==========================================================`,
+          `BILAN NEUROLOGIQUE - JOURNAL DES MIGRAINES (NEUROTRACK)`,
+          `==========================================================`,
+          `Date d'édition : 15/10/2026`,
+          `Patient(e) : ${patientName || 'Non renseigné'}`,
+          `Destinataire : ${neurologistName || 'Consultation Neurologie'}`,
+          `Traitement de fond : ${preventiveTreatment}`,
+          ``,
+          `1. SYNTHÈSE CLINIQUE`,
+          `• Nombre total d'épisodes : ${stats.totalCrises} crises`,
+          `• Intensité moyenne (EVA) : ${stats.avgIntensity} / 10`,
+          `• Durée moyenne : ${stats.avgDuration} heures`,
+          ``,
+          `2. PRINCIPAUX DÉCLENCHEURS`,
+          ...stats.topTriggers.slice(0, 5).map((t, i) => `${i + 1}. ${t.label} : ${t.percentage}% des crises (EVA moy: ${t.avgSeverity}/10)`),
+          ``,
+          `3. HISTORIQUE DES CRISES`,
+          ...logs.map((l) => `[${l.date} à ${l.startTime}] EVA: ${l.intensity}/10 | Durée: ${l.durationHours}h | Traitement: ${l.medication} (${l.reliefScore}/5) | Note: ${l.notes || '-'}`)
+        ];
+        return lines.join('\n');
+      };
+
+      const handleCopyReport = () => {
+        const text = generateReportSummaryText();
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand('copy');
+          showToast('Rapport copié dans le presse-papiers !');
+        } catch (err) {
+          showToast('Erreur de copie.');
+        }
+        document.body.removeChild(textarea);
+      };
+
+      const handleDownloadCSV = () => {
+        const headers = ['Date', 'Heure', 'Intensite_10', 'Duree_h', 'Zones', 'Declencheurs', 'Traitement', 'Soulagement_5', 'Notes'];
+        const rows = logs.map((l) => {
+          const z = (l.zones || []).map((id) => HEAD_ZONES.find((x) => x.id === id)?.label || id).join(' | ');
+          const t = (l.triggers || []).map((id) => TRIGGERS_CATALOG.find((x) => x.id === id)?.label || id).join(' | ');
+          return `"${l.date}","${l.startTime}","${l.intensity}","${l.durationHours}","${z}","${t}","${l.medication}","${l.reliefScore}","${(l.notes || '').replace(/"/g, '""')}"`;
+        });
+        const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `NeuroTrack_Bilan_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('Tableau CSV prêt !');
+      };
+
+      const handleExportJSONToDrive = async () => {
+        const payload = {
+          app: 'NeuroTrack',
+          exportDate: new Date().toISOString(),
+          patientProfile: { patientName, neurologistName, preventiveTreatment },
+          logs
+        };
+        const jsonStr = JSON.stringify(payload, null, 2);
+        const fileName = `NeuroTrack_Sauvegarde_${new Date().toISOString().slice(0, 10)}.json`;
+
+        if (navigator.share) {
+          try {
+            const file = new File([jsonStr], fileName, { type: 'application/json' });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                files: [file],
+                title: 'Sauvegarde NeuroTrack',
+                text: 'Ma sauvegarde NeuroTrack pour Google Drive'
+              });
+              showToast('Menu de partage ouvert vers votre Drive !');
+              return;
+            }
+          } catch (e) {}
+        }
+
+        const textarea = document.createElement('textarea');
+        textarea.value = jsonStr;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand('copy');
+          showToast('Données copiées dans le presse-papiers !');
+        } catch (err) {}
+        document.body.removeChild(textarea);
+      };
+
+      const handleImportJSON = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          try {
+            const parsed = JSON.parse(ev.target.result);
+            const imported = Array.isArray(parsed) ? parsed : parsed.logs;
+            if (Array.isArray(imported)) {
+              setLogs(imported);
+              showToast(`${imported.length} crises restaurées depuis votre Drive !`);
+            }
+          } catch (err) {
+            showToast('Fichier invalide.');
+          }
+        };
+        reader.readAsText(file);
+      };
+
+      const calendarDays = useMemo(() => {
+        const firstDayOfMonth = new Date(calendarYear, calendarMonth, 1).getDay();
+        const startOffset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+        const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+
+        const days = [];
+        for (let i = 0; i < startOffset; i++) days.push(null);
+        for (let d = 1; d <= daysInMonth; d++) {
+          const dateStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          const dayLogs = logs.filter((l) => l.date === dateStr);
+          days.push({ day: d, dateStr, logs: dayLogs });
+        }
+        return days;
+      }, [calendarMonth, calendarYear, logs]);
+
+      const monthNames = [
+        'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+        'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+      ];
+
+      const filteredLogs = useMemo(() => {
+        return [...logs]
+          .filter((log) => {
+            const matchesTrigger = filterTrigger === 'all' || (log.triggers || []).includes(filterTrigger);
+            const matchesIntensity = Number(log.intensity) >= filterMinIntensity;
+            return matchesTrigger && matchesIntensity;
+          })
+          .sort((a, b) => new Date(b.date) - new Date(a.date));
+      }, [logs, filterTrigger, filterMinIntensity]);
+
+      return (
+        <div
+          className={`min-h-screen transition-colors duration-300 ${
+            darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
+          } ${lowLightComfort ? 'sepia-[.25] brightness-90 contrast-95' : ''}`}
+        >
+          {/* Toast Notification */}
+          {toastMessage && (
+            <div className="fixed bottom-5 right-5 left-5 sm:left-auto z-50 flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-3 rounded-xl shadow-xl border border-indigo-400/30">
+              <span>✓</span>
+              <span className="text-sm font-medium">{toastMessage}</span>
+            </div>
+          )}
+
+          {/* Top Navigation Bar (Original Design) */}
+          <header
+            className={`sticky top-0 z-30 backdrop-blur-md border-b transition-colors no-print ${
+              darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white/90 border-slate-200'
+            }`}
+          >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md shadow-indigo-500/20 text-lg">
+                  🧠
+                </div>
+                <div>
+                  <h1 className="text-lg sm:text-xl font-bold tracking-tight flex items-center gap-2">
+                    NeuroTrack
+                    <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                      Journal Migraine
+                    </span>
+                    <span className="hidden md:inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                      ☁️ Sauvegarde active
+                    </span>
+                  </h1>
+                  <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Suivi des crises, cartographie crânienne et déclencheurs
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActiveTab('cloud_mobile')}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                    activeTab === 'cloud_mobile'
+                      ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
+                      : darkMode
+                      ? 'bg-slate-800 border-slate-700 text-emerald-400 hover:bg-slate-700'
+                      : 'bg-slate-100 border-slate-300 text-emerald-700 hover:bg-slate-200'
+                  }`}
+                >
+                  <span>📲</span>
+                  <span className="hidden sm:inline">Installer sur Téléphone</span>
+                </button>
+
+                <button
+                  onClick={() => setLowLightComfort(!lowLightComfort)}
+                  title="Filtre anti-photophobie"
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border transition-all ${
+                    lowLightComfort
+                      ? 'bg-amber-500/20 border-amber-500/50 text-amber-300'
+                      : darkMode
+                      ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                      : 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  <span>🕶️</span>
+                  <span className="hidden md:inline">Photophobie</span>
+                </button>
+
+                <button
+                  onClick={() => setDarkMode(!darkMode)}
+                  className={`p-2 rounded-xl border transition-colors ${
+                    darkMode
+                      ? 'bg-slate-800 border-slate-700 text-amber-400 hover:bg-slate-700'
+                      : 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  {darkMode ? '☀️' : '🌙'}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setEditingId(null);
+                    setActiveTab('new');
+                  }}
+                  className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/25 transition-all"
+                >
+                  <span>＋</span>
+                  <span>Noter une crise</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Original Horizontal Navigation Tabs */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 flex overflow-x-auto no-scrollbar gap-1 sm:gap-2 pt-1">
+              {[
+                { id: 'dashboard', label: 'Vue d’ensemble', icon: '📊' },
+                { id: 'new', label: editingId ? 'Modifier la crise' : 'Enregistrer une crise', icon: '➕' },
+                { id: 'analytics', label: 'Analyse & Déclencheurs', icon: '⚡' },
+                { id: 'calendar', label: 'Calendrier', icon: '📅' },
+                { id: 'history', label: 'Journal complet', icon: '📋' },
+                { id: 'report', label: 'Rapport Neurologue', icon: '🩺' },
+                { id: 'cloud_mobile', label: 'Icône Téléphone & Drive', icon: '📲' }
+              ].map((tab) => {
+                const active = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 whitespace-nowrap transition-all ${
+                      active
+                        ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5'
+                        : darkMode
+                        ? 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                        : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    }`}
+                  >
+                    <span>{tab.icon}</span>
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </header>
+
+          {/* Main Content Container */}
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+            {/* TAB 1: DASHBOARD (ORIGINAL DESIGN) */}
+            {activeTab === 'dashboard' && (
+              <div className="space-y-6">
+                {/* Top KPI Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className={`p-5 rounded-2xl border ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Jours sans crise</span>
+                      <span className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 text-sm">✨</span>
+                    </div>
+                    <div className="mt-3 flex items-baseline gap-2">
+                      <span className="text-3xl font-bold text-emerald-400">{stats.daysSinceLast}</span>
+                      <span className="text-xs text-slate-400">jours consécutifs</span>
+                    </div>
+                    <p className="mt-2 text-xs text-slate-500">Dernière crise le {logs[0]?.date || 'N/A'}</p>
+                  </div>
+
+                  <div className={`p-5 rounded-2xl border ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Crises enregistrées</span>
+                      <span className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 text-sm">📈</span>
+                    </div>
+                    <div className="mt-3 flex items-baseline gap-2">
+                      <span className="text-3xl font-bold">{stats.totalCrises}</span>
+                      <span className="text-xs text-slate-400">épisodes suivis</span>
+                    </div>
+                    <p className="mt-2 text-xs text-slate-500">Durée moyenne : {stats.avgDuration}h / crise</p>
+                  </div>
+
+                  <div className={`p-5 rounded-2xl border ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Intensité moyenne</span>
+                      <span className="p-2 rounded-lg bg-rose-500/10 text-rose-400 text-sm">💓</span>
+                    </div>
+                    <div className="mt-3 flex items-baseline gap-2">
+                      <span className="text-3xl font-bold text-rose-400">{stats.avgIntensity}</span>
+                      <span className="text-xs text-slate-400">/ 10 sur l'échelle EVA</span>
+                    </div>
+                    <div className="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+                      <div className="bg-gradient-to-r from-amber-500 to-rose-500 h-full rounded-full" style={{ width: `${stats.avgIntensity * 10}%` }} />
+                    </div>
+                  </div>
+
+                  <div className={`p-5 rounded-2xl border ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Déclencheur N°1</span>
+                      <span className="p-2 rounded-lg bg-amber-500/10 text-amber-400 text-sm">⚡</span>
+                    </div>
+                    {stats.topTriggers.length > 0 ? (
+                      <>
+                        <div className="mt-3 flex items-center gap-2">
+                          <span className="text-2xl">{stats.topTriggers[0].icon}</span>
+                          <span className="text-base font-bold truncate">{stats.topTriggers[0].label}</span>
+                        </div>
+                        <p className="mt-2 text-xs text-slate-400">
+                          Présent dans <strong className="text-amber-400">{stats.topTriggers[0].percentage}%</strong> de vos crises
+                        </p>
+                      </>
+                    ) : (
+                      <p className="mt-3 text-sm text-slate-400">Aucune donnée</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Middle Section: Top Triggers & Smart Insights */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className={`lg:col-span-2 p-6 rounded-2xl border ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-5">
+                      <div>
+                        <h2 className="text-base font-bold flex items-center gap-2">
+                          <span>⚡</span> Principaux Facteurs Déclenchants Identifiés
+                        </h2>
+                        <p className="text-xs mt-0.5 text-slate-400">
+                          Fréquence d'apparition et sévérité moyenne associée
+                        </p>
+                      </div>
+                      <button onClick={() => setActiveTab('analytics')} className="text-xs text-indigo-400 hover:underline font-medium">
+                        Voir l'analyse complète →
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {stats.topTriggers.slice(0, 5).map((trig) => (
+                        <div key={trig.id} className="space-y-1.5">
+                          <div className="flex items-center justify-between text-xs sm:text-sm">
+                            <div className="flex items-center gap-2 font-medium">
+                              <span>{trig.icon}</span>
+                              <span>{trig.label}</span>
+                              <span className={`text-[11px] px-2 py-0.5 rounded-full ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600'}`}>
+                                {trig.category}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs text-slate-400">
+                                EVA moy: <strong className="text-rose-400">{trig.avgSeverity}/10</strong>
+                              </span>
+                              <span className="font-bold text-indigo-400">
+                                {trig.count} fois ({trig.percentage}%)
+                              </span>
+                            </div>
+                          </div>
+                          <div className={`w-full h-2.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                            <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-rose-500" style={{ width: `${trig.percentage}%` }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Personalized Neurological Correlations */}
+                  <div className={`p-6 rounded-2xl border flex flex-col justify-between ${darkMode ? 'bg-gradient-to-b from-indigo-950/50 to-slate-900 border-indigo-500/30' : 'bg-gradient-to-b from-indigo-50 to-white border-indigo-200'}`}>
+                    <div>
+                      <div className="flex items-center gap-2 text-indigo-400 font-semibold text-sm mb-3">
+                        <span>✨</span>
+                        <span>Corrélations & Conseils Préventifs</span>
+                      </div>
+                      <div className="space-y-3 text-xs sm:text-sm leading-relaxed">
+                        <div className={`p-3.5 rounded-xl border ${darkMode ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200'}`}>
+                          <p className="font-semibold text-amber-400 mb-1">⚡ Effet cumulatif (Seuil migraineux)</p>
+                          <p className={darkMode ? 'text-slate-300' : 'text-slate-600'}>
+                            Vos crises les plus intenses (≥ 8/10) surviennent lorsque <strong>Manque de sommeil</strong> et <strong>Stress / Écrans</strong> se cumulent sur la même journée.
+                          </p>
+                        </div>
+
+                        <div className={`p-3.5 rounded-xl border ${darkMode ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200'}`}>
+                          <p className="font-semibold text-emerald-400 mb-1">💊 Réponse aux traitements</p>
+                          <p className={darkMode ? 'text-slate-300' : 'text-slate-600'}>
+                            Les <strong>Triptans</strong> et les <strong>AINS</strong> pris dès la première heure affichent le meilleur score de soulagement.
+                          </p>
+                        </div>
+
+                        <div className={`p-3.5 rounded-xl border ${darkMode ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200'}`}>
+                          <p className="font-semibold text-indigo-400 mb-1">🎯 Localisation dominante</p>
+                          <p className={darkMode ? 'text-slate-300' : 'text-slate-600'}>
+                            La douleur débute majoritairement du côté <strong>{stats.topZones[0]?.label || 'Temporal Gauche'}</strong> ({stats.topZones[0]?.percentage || 50}% des épisodes).
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => setActiveTab('new')}
+                      className="mt-5 w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all shadow-md"
+                    >
+                      + Ajouter une observation aujourd'hui
+                    </button>
+                  </div>
+                </div>
+
+                {/* Recent Crises List */}
+                <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-base font-bold flex items-center gap-2">
+                      <span>🕒</span> Dernières Crises Enregistrées
+                    </h2>
+                    <button onClick={() => setActiveTab('history')} className="text-xs text-indigo-400 hover:underline font-medium">
+                      Voir tout l'historique ({logs.length}) →
+                    </button>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className={`border-b text-xs uppercase ${darkMode ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500'}`}>
+                          <th className="py-3 px-3">Date & Heure</th>
+                          <th className="py-3 px-3">Intensité</th>
+                          <th className="py-3 px-3">Durée</th>
+                          <th className="py-3 px-3">Zones touchées</th>
+                          <th className="py-3 px-3">Déclencheurs</th>
+                          <th className="py-3 px-3">Traitement</th>
+                          <th className="py-3 px-3 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/50 text-xs sm:text-sm">
+                        {logs.slice(0, 4).map((log) => {
+                          const badge = getIntensityBadge(log.intensity);
+                          return (
+                            <tr
+                              key={log.id}
+                              onClick={() => setSelectedLogModal(log)}
+                              className={`cursor-pointer transition-colors ${darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'}`}
+                            >
+                              <td className="py-3.5 px-3 font-medium whitespace-nowrap">
+                                <div>{log.date}</div>
+                                <div className="text-xs text-slate-400">{log.startTime}</div>
+                              </td>
+                              <td className="py-3.5 px-3">
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${badge.color}`}>
+                                  {log.intensity}/10 • {badge.label}
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-3 whitespace-nowrap">{log.durationHours} h</td>
+                              <td className="py-3.5 px-3">
+                                <div className="flex flex-wrap gap-1">
+                                  {(log.zones || []).slice(0, 2).map((zId) => {
+                                    const zObj = HEAD_ZONES.find((z) => z.id === zId);
+                                    return (
+                                      <span key={zId} className={`text-[11px] px-2 py-0.5 rounded-md ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'}`}>
+                                        {zObj ? zObj.label : zId}
+                                      </span>
+                                    );
+                                  })}
+                                  {(log.zones || []).length > 2 && <span className="text-[11px] text-slate-400">+{log.zones.length - 2}</span>}
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-3">
+                                <div className="flex flex-wrap gap-1">
+                                  {(log.triggers || []).map((tId) => {
+                                    const tObj = TRIGGERS_CATALOG.find((t) => t.id === tId);
+                                    return (
+                                      <span key={tId} className="text-[11px] px-2 py-0.5 rounded-md border bg-indigo-950/50 border-indigo-500/30 text-indigo-300">
+                                        {tObj ? `${tObj.icon} ${tObj.label}` : tId}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-3">
+                                <div className="truncate max-w-[160px]">{log.medication}</div>
+                                <div className="text-[11px] text-emerald-400">
+                                  Soulagement : {'★'.repeat(log.reliefScore || 3)}{'☆'.repeat(5 - (log.reliefScore || 3))}
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                                <button onClick={() => handleEditLog(log)} className="px-2 py-1 text-slate-400 hover:text-indigo-400" title="Modifier">✏️</button>
+                                <button onClick={() => handleDeleteLog(log.id)} className="px-2 py-1 text-slate-400 hover:text-rose-400" title="Supprimer">🗑️</button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: NEW / EDIT CRISIS */}
+            {activeTab === 'new' && (
+              <form onSubmit={handleSaveCrisis} className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  <div className={`lg:col-span-5 p-6 rounded-2xl border space-y-6 ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-indigo-400">
+                      1. Paramètres & Localisation de la douleur
+                    </h3>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-medium mb-1.5">Date de la crise</label>
+                        <input
+                          type="date"
+                          required
+                          value={formData.date}
+                          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                          className={`w-full px-3 py-2 rounded-xl border text-sm ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-300'}`}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium mb-1.5">Heure de début</label>
+                        <input
+                          type="time"
+                          required
+                          value={formData.startTime}
+                          onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                          className={`w-full px-3 py-2 rounded-xl border text-sm ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-300'}`}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs font-medium">Intensité de la douleur (1 à 10)</label>
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${getIntensityBadge(formData.intensity).color}`}>
+                          {formData.intensity} / 10 — {getIntensityBadge(formData.intensity).label}
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="1"
+                        max="10"
+                        value={formData.intensity}
+                        onChange={(e) => setFormData({ ...formData, intensity: Number(e.target.value) })}
+                        className="w-full accent-rose-500 cursor-pointer"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <label className="text-xs font-medium">Durée estimée (en heures)</label>
+                        <span className="text-xs font-bold text-indigo-400">{formData.durationHours} heures</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="1"
+                        max="72"
+                        value={formData.durationHours}
+                        onChange={(e) => setFormData({ ...formData, durationHours: Number(e.target.value) })}
+                        className="w-full accent-indigo-500 cursor-pointer"
+                      />
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-800">
+                      <label className="block text-xs font-medium text-center mb-2">
+                        Cliquez sur les zones crâniennes douloureuses ({formData.zones.length})
+                      </label>
+                      <InteractiveHeadMap
+                        selectedZones={formData.zones}
+                        onToggleZone={(zoneId) => handleToggleItem('zones', zoneId)}
+                        darkMode={darkMode}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-7 space-y-6">
+                    <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-amber-400 mb-3">
+                        2. Facteurs Déclenchants Suspectés
+                      </h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                        {TRIGGERS_CATALOG.map((trig) => {
+                          const selected = formData.triggers.includes(trig.id);
+                          return (
+                            <button
+                              key={trig.id}
+                              type="button"
+                              onClick={() => handleToggleItem('triggers', trig.id)}
+                              className={`flex items-center gap-2 p-2.5 rounded-xl border text-left text-xs transition-all ${
+                                selected
+                                  ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-semibold'
+                                  : darkMode
+                                  ? 'bg-slate-800/60 border-slate-700/80 text-slate-300'
+                                  : 'bg-slate-50 border-slate-200 text-slate-700'
+                              }`}
+                            >
+                              <span className="text-base shrink-0">{trig.icon}</span>
+                              <span className="line-clamp-2">{trig.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-purple-400 mb-3">
+                        3. Symptômes Associés & Aura
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {SYMPTOMS_CATALOG.map((sym) => {
+                          const selected = formData.symptoms.includes(sym.id);
+                          return (
+                            <button
+                              key={sym.id}
+                              type="button"
+                              onClick={() => handleToggleItem('symptoms', sym.id)}
+                              className={`px-3 py-2 rounded-xl border text-xs transition-all ${
+                                selected
+                                  ? 'bg-purple-500/20 border-purple-500 text-purple-300 font-semibold'
+                                  : darkMode
+                                  ? 'bg-slate-800/60 border-slate-700 text-slate-300'
+                                  : 'bg-slate-50 border-slate-200 text-slate-700'
+                              }`}
+                            >
+                              {sym.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className={`p-6 rounded-2xl border space-y-4 ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-400">
+                        4. Traitement Pris & Soulagement
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium mb-1.5">Médicament / Action</label>
+                          <select
+                            value={formData.medication}
+                            onChange={(e) => setFormData({ ...formData, medication: e.target.value })}
+                            className={`w-full px-3 py-2.5 rounded-xl border text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-300'}`}
+                          >
+                            {MEDICATIONS_CATALOG.map((med) => (
+                              <option key={med} value={med}>{med}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium mb-1.5">Efficacité ({formData.reliefScore}/5)</label>
+                          <div className="flex items-center gap-1.5 pt-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() => setFormData({ ...formData, reliefScore: star })}
+                                className={`flex-1 py-2 rounded-lg border text-xs font-bold ${
+                                  formData.reliefScore >= star
+                                    ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
+                                    : darkMode
+                                    ? 'bg-slate-800 border-slate-700 text-slate-500'
+                                    : 'bg-slate-100 border-slate-200 text-slate-400'
+                                }`}
+                              >
+                                {star} ★
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <textarea
+                        rows="3"
+                        placeholder="Notes personnelles & contexte..."
+                        value={formData.notes}
+                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        className={`w-full p-3 rounded-xl border text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-300'}`}
+                      />
+
+                      <div className="flex justify-end">
+                        <button
+                          type="submit"
+                          className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-sm shadow-lg"
+                        >
+                          {editingId ? 'Mettre à jour la crise' : 'Enregistrer la crise dans le journal'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            )}
+
+            {/* TAB 3: ANALYTICS */}
+            {activeTab === 'analytics' && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                  <h3 className="text-base font-bold mb-4 text-amber-400">⚡ Classement Complet des Déclencheurs</h3>
+                  <div className="space-y-3.5">
+                    {stats.topTriggers.map((t) => (
+                      <div key={t.id} className={`p-3.5 rounded-xl border ${darkMode ? 'bg-slate-800/50 border-slate-700/70' : 'bg-slate-50 border-slate-200'}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{t.icon}</span>
+                            <div>
+                              <div className="text-sm font-semibold">{t.label}</div>
+                              <div className="text-[11px] text-slate-400">Catégorie : {t.category}</div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-sm font-bold text-indigo-400">{t.percentage}% des crises</span>
+                            <div className="text-[11px] text-rose-400">Sévérité moy. {t.avgSeverity}/10</div>
+                          </div>
+                        </div>
+                        <div className={`w-full h-2 rounded-full overflow-hidden ${darkMode ? 'bg-slate-900' : 'bg-slate-200'}`}>
+                          <div className="h-full bg-amber-500 rounded-full" style={{ width: `${t.percentage}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <h3 className="text-base font-bold mb-4 text-rose-400">🧠 Répartition Anatomique des Douleurs</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {stats.topZones.map((zone) => (
+                        <div key={zone.id} className={`p-3 rounded-xl border flex items-center justify-between ${darkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                          <div>
+                            <div className="text-xs font-semibold">{zone.label}</div>
+                            <div className="text-[11px] text-slate-400">{zone.count} apparitions</div>
+                          </div>
+                          <span className="text-sm font-bold text-rose-400">{zone.percentage}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <h3 className="text-base font-bold mb-4 text-emerald-400">💊 Efficacité des Traitements de Crise</h3>
+                    <div className="space-y-3">
+                      {stats.medicationStats.map((med) => (
+                        <div key={med.name} className="space-y-1">
+                          <div className="flex justify-between text-xs">
+                            <span className="font-semibold">{med.name}</span>
+                            <span className="text-emerald-400 font-bold">{med.avgRelief}/5 ★ ({med.count} prises)</span>
+                          </div>
+                          <div className={`w-full h-2.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-200'}`}>
+                            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${med.efficiencyPercent}%` }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: CALENDAR */}
+            {activeTab === 'calendar' && (
+              <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h2 className="text-lg font-bold">📅 Calendrier Mensuel des Crises</h2>
+                    <p className="text-xs text-slate-400">Cliquez sur un jour coloré pour voir les détails de la crise.</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => {
+                        if (calendarMonth === 0) { setCalendarMonth(11); setCalendarYear(calendarYear - 1); }
+                        else setCalendarMonth(calendarMonth - 1);
+                      }}
+                      className={`px-3 py-1.5 rounded-xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-300'}`}
+                    >
+                      ◀
+                    </button>
+                    <span className="text-sm font-bold min-w-[140px] text-center">
+                      {monthNames[calendarMonth]} {calendarYear}
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (calendarMonth === 11) { setCalendarMonth(0); setCalendarYear(calendarYear + 1); }
+                        else setCalendarMonth(calendarMonth + 1);
+                      }}
+                      className={`px-3 py-1.5 rounded-xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-300'}`}
+                    >
+                      ▶
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-slate-400 mb-2">
+                  <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+                </div>
+
+                <div className="grid grid-cols-7 gap-2">
+                  {calendarDays.map((cell, idx) => {
+                    if (!cell) return <div key={`empty-${idx}`} className="h-20 sm:h-24 rounded-xl bg-transparent" />;
+                    const hasCrisis = cell.logs.length > 0;
+                    const maxIntensity = hasCrisis ? Math.max(...cell.logs.map((l) => l.intensity)) : 0;
+                    let cellStyle = darkMode ? 'bg-slate-800/40 border-slate-800 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700';
+                    if (hasCrisis) {
+                      if (maxIntensity >= 8) cellStyle = 'bg-rose-500/20 border-rose-500/50 text-rose-200 cursor-pointer';
+                      else if (maxIntensity >= 5) cellStyle = 'bg-amber-500/20 border-amber-500/50 text-amber-200 cursor-pointer';
+                      else cellStyle = 'bg-emerald-500/20 border-emerald-500/50 text-emerald-200 cursor-pointer';
+                    }
+                    return (
+                      <div
+                        key={cell.dateStr}
+                        onClick={() => { if (hasCrisis) setSelectedLogModal(cell.logs[0]); }}
+                        className={`h-20 sm:h-24 p-2 rounded-xl border flex flex-col justify-between transition-all ${cellStyle}`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <span className="text-xs font-bold">{cell.day}</span>
+                          {hasCrisis && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/30">{maxIntensity}/10</span>}
+                        </div>
+                        {hasCrisis && (
+                          <div className="text-[10px] truncate">
+                            <div className="font-semibold">{cell.logs[0].durationHours}h</div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 5: COMPLETE JOURNAL HISTORY */}
+            {activeTab === 'history' && (
+              <div className="space-y-6">
+                <div className={`p-5 rounded-2xl border flex flex-wrap items-center justify-between gap-4 ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">Filtrer par déclencheur</label>
+                      <select
+                        value={filterTrigger}
+                        onChange={(e) => setFilterTrigger(e.target.value)}
+                        className={`px-3 py-2 rounded-xl border text-xs ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-300'}`}
+                      >
+                        <option value="all">Tous les déclencheurs</option>
+                        {TRIGGERS_CATALOG.map((t) => (
+                          <option key={t.id} value={t.id}>{t.icon} {t.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">Intensité min : <strong>{filterMinIntensity}/10</strong></label>
+                      <input type="range" min="1" max="10" value={filterMinIntensity} onChange={(e) => setFilterMinIntensity(Number(e.target.value))} className="w-36 accent-indigo-500" />
+                    </div>
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    Affichage de <strong className="text-indigo-400">{filteredLogs.length}</strong> sur {logs.length} crises
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {filteredLogs.map((log) => {
+                    const badge = getIntensityBadge(log.intensity);
+                    return (
+                      <div
+                        key={log.id}
+                        onClick={() => setSelectedLogModal(log)}
+                        className={`p-5 rounded-2xl border cursor-pointer transition-all ${darkMode ? 'bg-slate-900/90 border-slate-800 hover:border-indigo-500/40' : 'bg-white border-slate-200 shadow-sm'}`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-3">
+                          <div>
+                            <span className="text-sm font-bold">{log.date}</span>
+                            <span className="text-xs text-slate-400 ml-2">à {log.startTime} • {log.durationHours}h</span>
+                          </div>
+                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${badge.color}`}>
+                            {log.intensity}/10 • {badge.label}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                          {(log.triggers || []).map((tId) => {
+                            const tObj = TRIGGERS_CATALOG.find((t) => t.id === tId);
+                            return (
+                              <span key={tId} className={`text-xs px-2.5 py-1 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-slate-100 border-slate-200'}`}>
+                                {tObj ? `${tObj.icon} ${tObj.label}` : tId}
+                              </span>
+                            );
+                          })}
+                        </div>
+                        {log.notes && <p className="text-xs italic mb-3 text-slate-400">"{log.notes}"</p>}
+                        <div className="flex items-center justify-between pt-3 border-t border-slate-800/60 text-xs">
+                          <span className="text-emerald-400 font-medium">💊 {log.medication} ({'★'.repeat(log.reliefScore || 3)})</span>
+                          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                            <button onClick={() => handleEditLog(log)} className="text-slate-400 hover:text-indigo-400">✏️</button>
+                            <button onClick={() => handleDeleteLog(log.id)} className="text-slate-400 hover:text-rose-400">🗑️</button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 6: NEUROLOGIST REPORT */}
+            {activeTab === 'report' && (
+              <div className="space-y-6">
+                <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                  <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                    <div>
+                      <h2 className="text-lg font-bold">🩺 Synthèse Clinique & Export pour le Neurologue</h2>
+                      <p className="text-xs text-slate-400">Personnalisez et exportez votre bilan médical.</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button onClick={handleCopyReport} className="px-3.5 py-2 rounded-xl border border-slate-700 bg-slate-800 text-xs font-semibold text-slate-200">
+                        📋 Copier le texte
+                      </button>
+                      <button onClick={handleDownloadCSV} className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold">
+                        📊 Exporter Excel (.CSV)
+                      </button>
+                      <button onClick={() => window.print()} className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold">
+                        🖨️ Imprimer / PDF
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-5">
+                    <input
+                      type="text"
+                      placeholder="Votre Nom & Prénom"
+                      value={patientName}
+                      onChange={(e) => setPatientName(e.target.value)}
+                      className={`px-3 py-2 rounded-xl border text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-300'}`}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Médecin / Neurologue"
+                      value={neurologistName}
+                      onChange={(e) => setNeurologistName(e.target.value)}
+                      className={`px-3 py-2 rounded-xl border text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-300'}`}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Traitement de fond"
+                      value={preventiveTreatment}
+                      onChange={(e) => setPreventiveTreatment(e.target.value)}
+                      className={`px-3 py-2 rounded-xl border text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-300'}`}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 7: REAL SOLUTION TO UNLOCK THE "INSTALL" BUTTON */}
+            {activeTab === 'cloud_mobile' && (
+              <div className="space-y-6">
+                {/* Direct Explanation of Why Downloads Inside Gemini Webview Are Blocked */}
+                <div className={`p-6 rounded-2xl border-2 ${darkMode ? 'bg-slate-900/95 border-amber-500/50' : 'bg-white border-amber-300 shadow-sm'}`}>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold mb-3">
+                    💡 Pourquoi rien n'est allé dans votre dossier « Téléchargements » ?
+                  </div>
+                  <h2 className="text-base sm:text-lg font-bold text-white mb-2">
+                    L'application Gemini bloque les téléchargements de fichiers depuis l'aperçu
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    Pour des raisons de sécurité, l'aperçu interne de Gemini interdit aux boutons de télécharger un fichier `.html` directement dans votre téléphone. Mais <strong>vous n'avez même pas besoin de télécharger de fichier !</strong> Il est beaucoup plus simple de <strong>copier le code</strong> en 1 clic.
+                  </p>
+                </div>
+
+                {/* The Copy-Paste No-File Method */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Step by step with CodePen / EdgeOne / Export */}
+                  <div className={`p-6 rounded-2xl border ${darkMode ? 'bg-slate-900/90 border-emerald-500/40' : 'bg-white border-emerald-200 shadow-sm'}`}>
+                    <div className="inline-block px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold mb-3">
+                      MÉTHODE SANS FICHIER : Juste un Copier / Coller
+                    </div>
+                    <h3 className="text-base font-bold mb-3">
+                      Comment sortir l'application de Gemini en 30 secondes :
+                    </h3>
+
+                    <ol className="space-y-3.5 text-xs sm:text-sm text-slate-300 list-decimal list-inside leading-relaxed">
+                      <li>
+                        Regardez tout en haut à droite de votre écran Gemini : appuyez sur les <strong>3 petits points <code>•••</code></strong> (ceux de votre 1ère capture d'écran).
+                      </li>
+                      <li>
+                        Appuyez sur la dernière ligne du menu : <strong>« Copy code »</strong> (Copier le code). Tout le code propre de votre application est maintenant copié !
+                      </li>
+                      <li>
+                        Si vous voulez plutôt le vrai fichier dans votre téléphone, appuyez sur la 1ère ligne de ce même menu <code>•••</code> : <strong>« Export »</strong> (c'est le seul bouton autorisé par Google à enregistrer un fichier hors de Gemini).
+                      </li>
+                    </ol>
+                  </div>
+
+                  {/* Google Drive Backup & Restore */}
+                  <div className={`p-6 rounded-2xl border flex flex-col justify-between ${darkMode ? 'bg-slate-900/90 border-indigo-500/40' : 'bg-white border-indigo-200 shadow-sm'}`}>
+                    <div>
+                      <div className="inline-block px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold mb-3">
+                        ☁️ VOS DONNÉES & GOOGLE DRIVE
+                      </div>
+                      <h3 className="text-base font-bold mb-2">
+                        Sauvegarder ou restaurer votre journal de crises
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-4">
+                        Sur téléphone, le bouton ci-dessous ouvre directement le menu de partage natif d'Android/iOS pour envoyer votre sauvegarde vers l'application <strong>Google Drive</strong> de votre téléphone (sans passer par le dossier Téléchargements).
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={handleExportJSONToDrive}
+                        className="p-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg"
+                      >
+                        <span>☁️</span> Partager ma sauvegarde vers Google Drive
+                      </button>
+                      <label className="p-3.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer text-center">
+                        <span>📂</span> Restaurer mes données depuis Google Drive
+                        <input type="file" accept=".json,application/json" onChange={handleImportJSON} className="hidden" />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </main>
+
+          {/* Modal for Crisis Details */}
+          {selectedLogModal && (
+            <div
+              className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+              onClick={() => setSelectedLogModal(null)}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className={`w-full max-w-2xl rounded-2xl border p-6 max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-slate-900 border-slate-700 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}
+              >
+                <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+                  <div>
+                    <h3 className="text-lg font-bold">
+                      Détail de la crise du {selectedLogModal.date} à {selectedLogModal.startTime}
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Durée : {selectedLogModal.durationHours}h • Intensité : {selectedLogModal.intensity}/10
+                    </p>
+                  </div>
+                  <button onClick={() => setSelectedLogModal(null)} className="p-2 rounded-lg text-slate-400 hover:text-white">✕</button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-5">
+                  <div>
+                    <h4 className="text-xs font-bold uppercase text-slate-400 mb-2 text-center">Cartographie de la douleur</h4>
+                    <InteractiveHeadMap selectedZones={selectedLogModal.zones || []} readOnly={true} darkMode={darkMode} />
+                  </div>
+                  <div className="space-y-4 text-xs sm:text-sm">
+                    <div>
+                      <h4 className="text-xs font-bold uppercase text-amber-400 mb-1.5">Déclencheurs identifiés</h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(selectedLogModal.triggers || []).map((tId) => {
+                          const t = TRIGGERS_CATALOG.find((item) => item.id === tId);
+                          return (
+                            <span key={tId} className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs">
+                              {t ? `${t.icon} ${t.label}` : tId}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold uppercase text-emerald-400 mb-1">Traitement & Efficacité</h4>
+                      <p className="font-medium">{selectedLogModal.medication}</p>
+                      <p className="text-xs text-emerald-400">
+                        Soulagement : {'★'.repeat(selectedLogModal.reliefScore || 3)} ({selectedLogModal.reliefScore || 3}/5)
+                      </p>
+                    </div>
+                    {selectedLogModal.notes && (
+                      <div>
+                        <h4 className="text-xs font-bold uppercase text-slate-400 mb-1">Notes</h4>
+                        <p className="p-3 rounded-xl border border-slate-700 bg-slate-800/60 text-xs">{selectedLogModal.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+                  <button onClick={() => handleEditLog(selectedLogModal)} className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold">
+                    ✏️ Modifier cette entrée
+                  </button>
+                  <button onClick={() => setSelectedLogModal(null)} className="px-4 py-2 rounded-xl border border-slate-700 text-xs font-semibold">
+                    Fermer
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<NeuroTrackApp />);
+  </script>
+</body>
+</html>
